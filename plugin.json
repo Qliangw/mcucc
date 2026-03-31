@@ -1,0 +1,21 @@
+{
+    "name": "mcucc-plugin",
+    "version": "0.0.1",
+    "description": "High-Agency MCU Architect: A strict, professional agent plugin for scaffolding bare-metal MCU projects. Forces Makefiles, strict cross-platform toolchains (GCC), hardware/software directory separation, and exhaustive error resolution. Prohibits proprietary IDEs like Keil/IAR.",
+    "author": {
+        "name": "Qliangw",
+        "url": "https://github.com/Qliangw"
+    },
+    "homepage": "https://github.com/Qliangw/mcucc",
+    "repository": "https://github.com/Qliangw/mcucc.git",
+    "license": "MIT",
+    "keywords": [
+        "mcu",
+        "bare-metal",
+        "gcc",
+        "makefile",
+        "embedded-c",
+        "architecture",
+        "high-agency"
+    ]
+}

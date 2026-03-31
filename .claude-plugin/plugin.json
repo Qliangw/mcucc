@@ -1,0 +1,18 @@
+{
+    "name": "mcucc",
+    "version": "0.0.1",
+    "description": "Transforms Claude into a strict Principal Embedded Engineer. Enforces no-Keil, pure Makefiles, and auto-checks terminal output before confirming completion. Common triggers: 'new mcu project', '/mcucc', '/new-mcu', '不要用Keil', '建单片机工程', '裸机', '建个新工程'.",
+    "author": {
+        "name": "Qliangw",
+        "url": "https://github.com/Qliangw"
+    },
+    "homepage": "https://github.com/Qliangw/mcucc",
+    "repository": "https://github.com/Qliangw/mcucc.git",
+    "license": "MIT",
+    "keywords": [
+        "mcu",
+        "bare-metal",
+        "gcc",
+        "makefile"
+    ]
+}
