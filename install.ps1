@@ -2,7 +2,7 @@
 .SYNOPSIS
 MCUCC Cloud Bootstrapper (Network-Aware)
 .DESCRIPTION
-Installs the MCUCC High-Agency Rules interactively. Detects if running locally or standalone, and fetches missing files from raw.githubusercontent.com on the fly.
+Installs the MCUCC High-Agency Rules interactively. Detects if running locally or standalone, and fetches missing files from GitHub on the fly.
 #>
 param(
     [string]$TargetDirectory,
@@ -22,7 +22,7 @@ function Get-McuccFile {
         try {
             Invoke-WebRequest -Uri $RemoteUrl -OutFile $Destination -UseBasicParsing | Out-Null
         } catch {
-            Write-Host "[ERROR] 网络请求失败，请检查网络是否能访问 raw.githubusercontent.com" -ForegroundColor Red
+            Write-Host "[ERROR] Network request failed. Cannot access raw.githubusercontent.com" -ForegroundColor Red
         }
     }
 }
@@ -38,15 +38,15 @@ function Get-McuccContent {
         try {
             return (Invoke-WebRequest -Uri $RemoteUrl -UseBasicParsing).Content
         } catch {
-            Write-Host "[ERROR] 法典源读取失败。" -ForegroundColor Red
+            Write-Host "[ERROR] Failed to read remote source file." -ForegroundColor Red
             return ""
         }
     }
 }
 
 if (-not $TargetDirectory) {
-    Write-Host "`n[MCUCC Installer] 欢迎使用。请输入您要注入 MCUCC 极客协议的工程绝对路径？" -ForegroundColor Cyan
-    $TargetDirectory = Read-Host "（直接按 ENTER 键代表当前路径: $((Get-Location).Path)）"
+    Write-Host "`n[MCUCC Installer] Welcome. Enter the absolute path of your target MCU project directory?" -ForegroundColor Cyan
+    $TargetDirectory = Read-Host "(Press ENTER to use current directory: $((Get-Location).Path))"
     if ([string]::IsNullOrWhiteSpace($TargetDirectory)) {
         $TargetDirectory = (Get-Location).Path
     }
@@ -54,39 +54,39 @@ if (-not $TargetDirectory) {
 
 $TargetDirectory = Resolve-Path $TargetDirectory -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Path
 if (-not (Test-Path $TargetDirectory)) {
-    Write-Host "[ERROR] Target directory not found: $TargetDirectory. 目录可能不存在，请检查后重试。" -ForegroundColor Red
+    Write-Host "[ERROR] Target directory not found: $TargetDirectory. Please check and try again." -ForegroundColor Red
     exit 1
 }
 
 if (-not $Agents) {
-    Write-Host "`n[MCUCC 一键部署系统] 请为您即将部署的项目选择您所拥有的 AI 组合（云端流式拉取）：" -ForegroundColor Cyan
-    Write-Host "  [1] Cursor IDE        (向目标写入不可见的 .cursor/rules)"
-    Write-Host "  [2] Claude / 纯终端   (网络抓取万字法则并送入剪贴板备用)"
-    Write-Host "  [3] 原生 .agents 规范 (全库拉取并建立技能挂载点)"
-    Write-Host "  [4] 全系静默全装      (全部都要！)"
-    $Agents = Read-Host "请输入如 1,3，或单打 4"
+    Write-Host "`n[MCUCC Cloud Deployment] Please select the AI environments you intend to use (Comma separated):" -ForegroundColor Cyan
+    Write-Host "  [1] Cursor IDE        (Injects .cursor/rules)"
+    Write-Host "  [2] Claude / Terminal (Fetches SKILL.md to clipboard)"
+    Write-Host "  [3] Native .agents    (Clones full structure for .agents)"
+    Write-Host "  [4] Install ALL       (Everything)"
+    $Agents = Read-Host "Enter numbers (e.g. 1,3 or 4)"
 }
 
 $Selections = @()
 if ($Agents -match "4") { $Selections = 1,2,3 } else { $Selections = $Agents -split "," | ForEach-Object { $_.Trim() } }
 
-Write-Host "`n=== 开始为工程分配安全屋: $TargetDirectory ===" -ForegroundColor Yellow
+Write-Host "`n=== Securing project at: $TargetDirectory ===" -ForegroundColor Yellow
 
 if ($Selections -contains "1") {
     $CursorRulesPath = Join-Path -Path $TargetDirectory -ChildPath ".cursor\rules"
     if (-not (Test-Path $CursorRulesPath)) { New-Item -ItemType Directory -Force -Path $CursorRulesPath | Out-Null }
     Get-McuccFile -RelativePath "cursor\rules\mcucc.mdc" -Destination "$CursorRulesPath\mcucc.mdc"
-    Write-Host "[OK] Cursor IDE 核心规则注入完成 -> $CursorRulesPath\mcucc.mdc" -ForegroundColor Green
+    Write-Host "[OK] Cursor IDE rules injected -> $CursorRulesPath\mcucc.mdc" -ForegroundColor Green
 }
 
 if ($Selections -contains "2") {
     $SkillContent = Get-McuccContent -RelativePath "skills\mcucc\SKILL.md"
     if (-not [string]::IsNullOrWhiteSpace($SkillContent)) {
         $SkillContent | Set-Clipboard
-        Write-Host "[OK] Claude 准则已由云端接出送入剪贴板！可以直接去 Claude Project 内 Ctrl+V 粘贴啦！" -ForegroundColor Green
+        Write-Host "[OK] Claude protocol fetched to CLIPBOARD. Just press Ctrl+V in Claude Project Instructions!" -ForegroundColor Green
         $ReadmePath = Join-Path -Path $TargetDirectory -ChildPath "MCUCC_CLAUDE_README.txt"
-        "由于您选用了单独下载引导装载程序，原始文件未留存。`n完整的纯净架构法则已经存在于您的系统剪贴板（Ctrl+C）中，请直接贴给AI！`n如果您丢失了它，请重新运行或访问：$BaseUrl/skills/mcucc/SKILL.md" | Out-File -FilePath $ReadmePath
-        Write-Host "     [备忘] 为了防止您搞掉这段剪贴板，已经贴心在根目录拉出一份备忘说明 -> $ReadmePath" -ForegroundColor DarkGreen
+        "Because you used the cloud bootstrapper, no local files were preserved.`nThe full MCUCC protocol is now in your system clipboard (Ctrl+C). Paste it to your AI!`nIf you lost it, re-run the script or visit: $BaseUrl/skills/mcucc/SKILL.md" | Out-File -FilePath $ReadmePath
+        Write-Host "     [Info] A text reminder was placed at -> $ReadmePath" -ForegroundColor DarkGreen
     }
 }
 
@@ -98,7 +98,7 @@ if ($Selections -contains "3") {
     $ScriptsDest = Join-Path -Path $AgentsPath -ChildPath "scripts"
     if (-not (Test-Path $ScriptsDest)) { New-Item -ItemType Directory -Force -Path $ScriptsDest | Out-Null }
     Get-McuccFile -RelativePath "scripts\check_env.ps1" -Destination "$ScriptsDest\check_env.ps1"
-    Write-Host "[OK] 原生生态 .agents 环境规范已从拉取完成并落盘 -> $AgentsPath" -ForegroundColor Green
+    Write-Host "[OK] Native .agents standardized structure deployed -> $AgentsPath" -ForegroundColor Green
 }
 
-Write-Host "`n[MCUCC Bootstrapper] 🎯 部署完毕！您的工程已被首席嵌入式架构师云端防线接管！`n" -ForegroundColor Cyan
+Write-Host "`n[MCUCC Bootstrapper] 🎯 Deployment complete! Your project is now guided by Principal Architect standards.`n" -ForegroundColor Cyan
